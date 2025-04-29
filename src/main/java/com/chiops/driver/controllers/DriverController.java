@@ -58,6 +58,17 @@ public class DriverController {
         }
     }
 
+    @Get("/getall")
+    public List<DriverDTO> getAllDrivers() {
+        try {
+            return driverService.getAllDrivers();
+        } catch (BadRequestException e) {
+            throw new BadRequestException("Bad request while trying to get all drivers: " + e.getMessage());
+        } catch (InternalServerException e) {
+            throw new InternalServerException("Internal server error while trying to get all drivers: " + e.getMessage());
+        }
+    }
+
     @Error(status = HttpStatus.NOT_FOUND, global = true)
     public HttpResponse<ErrorResponse> handleNotFound(HttpRequest<?> request) {
         throw new NotFoundException("Endpoint " + request.getPath() + " not found");
