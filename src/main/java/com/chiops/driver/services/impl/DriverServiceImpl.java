@@ -83,6 +83,14 @@ public class DriverServiceImpl implements DriverService {
 
         return toDriverDTO(existingDriver);
     }
+
+    @Override
+    public void deleteDriver(String curp) {
+        Driver driver = driverRepository.findByCurp(curp)
+        .orElseThrow(() -> new NotFoundException("Driver not found with CURP: " + curp));
+        driverRepository.delete(driver);
+    }
+
     private DriverDTO toDriverDTO(Driver driver) {
         DriverDTO dto = new DriverDTO();
         dto.setFirstName(driver.getFullName().getFirstName());
