@@ -178,9 +178,6 @@ docker network inspect {nombre_de_la_network}
 
 ---
 
-## Correr el sistema 
-./gradlew run
-
 ## Micronaut 4.8.2 Documentation
 
 - [User Guide](https://docs.micronaut.io/4.8.2/guide/index.html)
