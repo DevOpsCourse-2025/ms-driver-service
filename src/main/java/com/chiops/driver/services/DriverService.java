@@ -3,6 +3,8 @@ package com.chiops.driver.services;
 
 import com.chiops.driver.libs.dtos.DriverDTO;
 
+import jakarta.validation.Valid;
+
 import java.util.List;
 
 public interface DriverService {
@@ -11,9 +13,9 @@ public interface DriverService {
 
     DriverDTO getDriverByCurp(String curp);
 
-    DriverDTO createDriver(DriverDTO driverDTO);
+    DriverDTO createDriver(@Valid DriverDTO driverDTO);
 
     DriverDTO updateDriver(DriverDTO driverDTO);
 
-    void deleteDriver(String curp);
+    DriverDTO  deleteDriver(String curp);
 }

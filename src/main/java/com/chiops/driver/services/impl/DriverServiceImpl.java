@@ -9,11 +9,14 @@ import com.chiops.driver.libs.exceptions.exception.*;
 import com.chiops.driver.repositories.DriverRepository;
 import com.chiops.driver.services.DriverService;
 import io.micronaut.transaction.annotation.Transactional;
+import io.micronaut.validation.Validated;
 import jakarta.inject.Singleton;
 import jakarta.validation.Valid;
 
 import java.util.List;
+import java.util.Optional;
 
+@Validated
 @Singleton
 public class DriverServiceImpl implements DriverService {
 
@@ -33,22 +36,33 @@ public class DriverServiceImpl implements DriverService {
 
     @Override
     public DriverDTO getDriverByCurp(String curp) {
-        Driver driver = driverRepository.findByCurp(curp)
-        .orElseThrow(() -> new NotFoundException("Driver not found with CURP: " + curp));
-        return toDriverDTO(driver);
+
+        if (curp == null || curp.isBlank()) {
+            throw new BadRequestException("CURP field is obligatory");
+        }
+        Optional<Driver> opt = driverRepository.findByCurp(curp);
+        if (opt.isEmpty()) {
+            throw new NotFoundException("Driver not found with CURP: " + curp);
+        }
+        return toDriverDTO(opt.get());
     }
 
     @Override
     @Transactional
-    public DriverDTO createDriver(DriverDTO dto) {
-        FullName fullName = new FullName(dto.getFirstName(), dto.getLastName());
-
-        Address address = new Address(dto.getStreet(), dto.getCity(), dto.getState());
-        License license = new License(dto.getLicenseNumber());
+    public DriverDTO createDriver(@Valid DriverDTO dto) {
+        if (dto.getCurp() == null || dto.getCurp().isBlank()) {
+            throw new BadRequestException("CURP field is obligatory");
+        }
+        
 
         if (driverRepository.findByCurp(dto.getCurp()).isPresent()) {
             throw new ConflictException("Driver with CURP " + dto.getCurp() + " already exists");
         }
+
+        FullName fullName = new FullName(dto.getFirstName(), dto.getLastName());
+        Address address = new Address(dto.getStreet(), dto.getCity(), dto.getState());
+        License license = new License(dto.getLicenseNumber());
+
         Driver driver = new Driver(
                 fullName,
                 dto.getCurp(),
@@ -63,16 +77,15 @@ public class DriverServiceImpl implements DriverService {
     @Override
     public DriverDTO updateDriver(DriverDTO driverDTO) {
         Driver existingDriver = driverRepository.findByCurp(driverDTO.getCurp())
-        .orElseThrow(() -> new NotFoundException("Driver not found with CURP: " + driverDTO.getCurp()));
+        .orElseThrow(() ->new BadRequestException("CURP cannot be changed, be sure to write the CURP correctly of the driver you want to update"));
 
+                
         if (!existingDriver.getCurp().equals(driverDTO.getCurp())) {
-            throw new BadRequestException("CURP cannot be changed");
+            throw new BadRequestException("CURP cannot be changed, be sure to write the CURP correctly of the driver you want to update");
         }
-
 
         existingDriver.getFullName().setFirstName(driverDTO.getFirstName());
         existingDriver.getFullName().setLastName(driverDTO.getLastName());
-        existingDriver.setCurp(driverDTO.getCurp());
         existingDriver.getAddress().setStreet(driverDTO.getStreet());
         existingDriver.getAddress().setCity(driverDTO.getCity());
         existingDriver.getAddress().setState(driverDTO.getState());
@@ -80,15 +93,18 @@ public class DriverServiceImpl implements DriverService {
         existingDriver.setRegistrationDate(driverDTO.getRegistrationDate());
 
         driverRepository.update(existingDriver);
-
         return toDriverDTO(existingDriver);
     }
 
     @Override
-    public void deleteDriver(String curp) {
-        Driver driver = driverRepository.findByCurp(curp)
-        .orElseThrow(() -> new NotFoundException("Driver not found with CURP: " + curp));
+    public DriverDTO  deleteDriver(String curp) {
+        Optional<Driver> opt = driverRepository.findByCurp(curp);
+        if (opt.isEmpty()) {
+            throw new BadRequestException("The CURP is incorrect.");
+        }
+        Driver driver = opt.get();
         driverRepository.delete(driver);
+        return toDriverDTO(driver);
     }
 
     private DriverDTO toDriverDTO(Driver driver) {
@@ -103,28 +119,4 @@ public class DriverServiceImpl implements DriverService {
         dto.setRegistrationDate(driver.getRegistrationDate());
         return dto;
     }
-
-    private Driver toDriverEntity(DriverDTO driverDTO) {
-        Driver driver = new Driver();
-        FullName fullName = new FullName();
-
-        fullName.setFirstName(driverDTO.getFirstName());
-        fullName.setLastName(driverDTO.getLastName());
-        driver.setFullName(fullName);
-        driver.setCurp(driver.getCurp());
-
-        Address address = new Address();
-        address.setStreet(driverDTO.getStreet());
-        address.setCity(driverDTO.getCity());
-        address.setState(driverDTO.getState());
-
-        driver.setAddress(address);
-        License license = new License();
-        license.setLicenseNumber(driverDTO.getLicenseNumber());
-
-        driver.setLicense(license);
-        driver.setRegistrationDate(driver.getRegistrationDate());
-        return driver;
-    }
-
 }
