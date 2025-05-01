@@ -3,6 +3,7 @@ package com.chiops.driver.libs.dtos;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.serde.annotation.Serdeable;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -28,14 +29,14 @@ public class DriverDTO {
 
     @NotBlank
     private String state;
-
-    @NotBlank
+    
+    @NotNull
     private BigDecimal monthlySalary;
 
     @NotBlank
     private String licenseNumber;
 
-    @NotBlank
+    @NotNull
     private LocalDateTime registrationDate;
 
     public DriverDTO() {

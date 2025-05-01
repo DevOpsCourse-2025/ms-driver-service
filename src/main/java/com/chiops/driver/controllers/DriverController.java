@@ -1,18 +1,12 @@
 package com.chiops.driver.controllers;
 
 import com.chiops.driver.libs.dtos.DriverDTO;
-import com.chiops.driver.libs.exceptions.entities.ErrorResponse;
 import com.chiops.driver.libs.exceptions.exception.BadRequestException;
 import com.chiops.driver.libs.exceptions.exception.InternalServerException;
-import com.chiops.driver.libs.exceptions.exception.MethodNotAllowedException;
-import com.chiops.driver.libs.exceptions.exception.NotFoundException;
+
 import com.chiops.driver.services.DriverService;
 
-import io.micronaut.http.HttpRequest;
-import io.micronaut.http.HttpResponse;
-import io.micronaut.http.HttpStatus;
 import io.micronaut.http.annotation.*;
-import io.micronaut.http.annotation.Error;
 
 import java.util.List;
 
@@ -78,15 +72,5 @@ public class DriverController {
         } catch (InternalServerException e) {
             throw new InternalServerException("Internal server error while trying to get all drivers: " + e.getMessage());
         }
-    }
-
-    @Error(status = HttpStatus.NOT_FOUND, global = true)
-    public HttpResponse<ErrorResponse> handleNotFound(HttpRequest<?> request) {
-        throw new NotFoundException("Endpoint " + request.getPath() + " not found");
-    }
-
-    @Error(status = HttpStatus.METHOD_NOT_ALLOWED, global = true)
-    public HttpResponse<ErrorResponse> handleMethodNotAllowed(HttpRequest<?> request) {
-        throw new MethodNotAllowedException("Method " + request.getMethod() + " is not allowed for " + request.getPath());
     }
 }
